@@ -1,0 +1,37 @@
+name: Actualizar BoxScores ACB
+
+on:
+  # Se ejecuta automáticamente todos los Lunes a las 08:00 UTC (9:00 u 10:00 en España según horario)
+  schedule:
+    - cron: '0 8 * * 1'
+  
+  # Permite ejecutarlo manualmente pulsando un botón en GitHub
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Permiso vital para que pueda guardar el CSV
+
+    steps:
+      - name: Chequear el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r requirements.txt
+
+      - name: Ejecutar Scraper BoxScore
+        run: python boxscore_ACB_headless.py
+
+      - name: Guardar cambios (Commit & Push)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🤖 Auto-update: ACB BoxScores actualizados"
+          file_pattern: "data/*.csv"
