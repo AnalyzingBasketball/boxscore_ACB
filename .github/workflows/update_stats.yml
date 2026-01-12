@@ -1,18 +1,15 @@
-name: Actualizar Stats ACB (BoxScore + PbP)
+name: Actualizar Stats ACB (Completo)
 
 on:
-  # Se ejecuta automáticamente todos los Lunes a las 08:00 UTC
   schedule:
     - cron: '0 8 * * 1'
-  
-  # Permite ejecutarlo manualmente pulsando el botón en GitHub
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Permiso vital para guardar los CSVs
+      contents: write
 
     steps:
       - name: Chequear el repositorio
@@ -27,17 +24,25 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      # --- SCRIPT 1: BOXSCORE ---
-      - name: Ejecutar Scraper BoxScore
+      # --- 1. BOXSCORE (Jugadores) ---
+      - name: Scraper BoxScore
         run: python boxscore_ACB_headless.py
 
-      # --- SCRIPT 2: PLAY-BY-PLAY ---
-      - name: Ejecutar Scraper Play-by-Play
+      # --- 2. PLAY-BY-PLAY (Eventos) ---
+      - name: Scraper Play-by-Play
         run: python pbp_ACB_headless.py
 
-      # --- GUARDADO FINAL ---
-      - name: Guardar cambios (Commit & Push)
+      # --- 3. SHOTCHART (Tiros) ---
+      - name: Scraper ShotChart
+        run: python shotchart_ACB_headless.py
+
+      # --- 4. TEAM STATS (Equipos) ---
+      - name: Scraper Team Stats
+        run: python teamstats_ACB_headless.py
+
+      # --- GUARDADO ---
+      - name: Guardar cambios
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "🤖 Auto-update: BoxScore y PlayByPlay actualizados"
+          commit_message: "🤖 Auto-update: Póker de Stats actualizado"
           file_pattern: "data/*.csv"
